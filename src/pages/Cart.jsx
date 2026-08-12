@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Trash2, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { formatINR } from '../utils/currency';
 
 export default function Cart() {
   const { cartItems, updateQuantity, removeFromCart, getSubtotal, getDeliveryCharge, getTotal } = useCart();
@@ -68,7 +69,7 @@ export default function Cart() {
                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{item.product.farmerName}</span>
                     <h4 style={{ fontSize: '1.05rem', color: 'var(--gray-800)', margin: '0.1rem 0' }}>{item.product.name}</h4>
                     <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary)' }}>
-                      ${item.product.price.toFixed(2)} / {item.product.unit}
+                      {formatINR(item.product.price)} / {item.product.unit}
                     </span>
                   </div>
 
@@ -92,7 +93,7 @@ export default function Cart() {
                   {/* Total price & delete */}
                   <div style={{ textAlign: 'right', minWidth: '80px' }}>
                     <div style={{ fontWeight: 'bold', color: 'var(--gray-800)', fontSize: '1.05rem' }}>
-                      ${(item.product.price * item.quantity).toFixed(2)}
+                      {formatINR(item.product.price * item.quantity)}
                     </div>
                     <button 
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger)', marginTop: '0.25rem', padding: '0.25rem' }}
@@ -118,22 +119,22 @@ export default function Cart() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}>
                   <span style={{ color: 'var(--text-muted)' }}>Subtotal</span>
-                  <span style={{ fontWeight: 600 }}>${subtotal.toFixed(2)}</span>
+                  <span style={{ fontWeight: 600 }}>{formatINR(subtotal)}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem' }}>
                   <span style={{ color: 'var(--text-muted)' }}>Delivery Charge</span>
-                  <span>{delivery === 0 ? <strong style={{ color: 'var(--success)' }}>FREE</strong> : `$${delivery.toFixed(2)}`}</span>
+                  <span>{delivery === 0 ? <strong style={{ color: 'var(--success)' }}>FREE</strong> : formatINR(delivery)}</span>
                 </div>
                 {delivery > 0 && (
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', backgroundColor: 'var(--primary-bg)', padding: '0.5rem 0.75rem', borderRadius: '8px' }}>
-                    Add <strong>${(40.01 - subtotal).toFixed(2)}</strong> more to get free delivery!
+                    Add <strong>{formatINR(500 - subtotal)}</strong> more to get free delivery!
                   </p>
                 )}
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.25rem', fontWeight: 'bold', borderTop: '1px solid var(--gray-100)', paddingTop: '1rem', marginBottom: '2rem' }}>
                 <span>Total</span>
-                <span style={{ color: 'var(--primary)' }}>${total.toFixed(2)}</span>
+                <span style={{ color: 'var(--primary)' }}>{formatINR(total)}</span>
               </div>
 
               <button 

@@ -1,3 +1,5 @@
+import { getCategoryImage, getProductImage } from '../data/categoryImages';
+
 // Mock Initial Products
 const INITIAL_PRODUCTS = [
   {
@@ -109,7 +111,7 @@ export const getProducts = () => {
     localStorage.setItem('farmlink_products', JSON.stringify(INITIAL_PRODUCTS));
     return INITIAL_PRODUCTS;
   }
-  return JSON.parse(saved);
+  return JSON.parse(saved).map((product) => ({ ...product, imageUrl: getProductImage(product) }));
 };
 
 export const getProductById = (id) => {
@@ -130,7 +132,8 @@ export const saveProduct = (productData, farmer) => {
           ...p,
           ...productData,
           price: parseFloat(productData.price),
-          quantity: parseInt(productData.quantity)
+          quantity: parseInt(productData.quantity),
+          imageUrl: getCategoryImage(productData.category),
         };
       }
       return p;
@@ -147,7 +150,7 @@ export const saveProduct = (productData, farmer) => {
       price: parseFloat(productData.price),
       unit: productData.unit,
       quantity: parseInt(productData.quantity),
-      imageUrl: productData.imageUrl || 'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&q=80&w=600',
+      imageUrl: getCategoryImage(productData.category),
       createdAt: new Date().toISOString()
     };
     updatedProducts = [newProduct, ...products];

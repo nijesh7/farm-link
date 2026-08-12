@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // Contexts
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -21,6 +22,14 @@ import Register from './pages/Register';
 import Products from './pages/Products';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import Faq from './pages/Faq';
+import FarmerGuide from './pages/FarmerGuide';
+import Delivery from './pages/Delivery';
+import Stories from './pages/Stories';
+import SeasonalPicks from './pages/SeasonalPicks';
+import Recipes from './pages/Recipes';
+import Impact from './pages/Impact';
+import SavedItems from './pages/SavedItems';
 
 // Protected Dashboards
 import CustomerDashboard from './pages/customer/CustomerDashboard';
@@ -31,8 +40,9 @@ function App() {
     <ThemeProvider>
       <Router>
         <AuthProvider>
-          <CartProvider>
-            <ToastProvider>
+          <WishlistProvider>
+            <CartProvider>
+              <ToastProvider>
               <Navbar />
               <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <Routes>
@@ -43,7 +53,21 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/products" element={<Products />} />
-                  <Route path="/cart" element={<Cart />} />
+                  <Route
+                    path="/cart"
+                    element={
+                      <ProtectedRoute allowedRoles={['customer']}>
+                        <Cart />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="/faq" element={<Faq />} />
+                  <Route path="/farmer-guide" element={<FarmerGuide />} />
+                  <Route path="/delivery" element={<Delivery />} />
+                  <Route path="/stories" element={<Stories />} />
+                  <Route path="/seasonal-picks" element={<SeasonalPicks />} />
+                  <Route path="/recipes" element={<Recipes />} />
+                  <Route path="/impact" element={<Impact />} />
                   
                   {/* Customer Role Routes */}
                   <Route 
@@ -62,6 +86,14 @@ function App() {
                       </ProtectedRoute>
                     } 
                   />
+                  <Route
+                    path="/saved-items"
+                    element={
+                      <ProtectedRoute allowedRoles={['customer']}>
+                        <SavedItems />
+                      </ProtectedRoute>
+                    }
+                  />
 
                   {/* Farmer Role Routes */}
                   <Route 
@@ -78,8 +110,9 @@ function App() {
                 </Routes>
               </main>
               <Footer />
-            </ToastProvider>
-          </CartProvider>
+              </ToastProvider>
+            </CartProvider>
+          </WishlistProvider>
         </AuthProvider>
       </Router>
     </ThemeProvider>

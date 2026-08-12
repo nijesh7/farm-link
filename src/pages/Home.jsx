@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Users, ArrowRight, ShieldCheck, Heart, Truck, Award } from 'lucide-react';
 import { getProducts } from '../services/firebaseDb';
+import { formatINR } from '../utils/currency';
 
 const CATEGORIES = [
   { name: 'Vegetables', icon: '🌽', img: 'https://images.unsplash.com/photo-1566385278603-605b6dc7c41a?auto=format&fit=crop&q=80&w=400' },
@@ -223,7 +224,7 @@ export default function Home() {
                   </p>
                   <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)' }}>${product.price}</span>
+                      <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)' }}>{formatINR(product.price)}</span>
                       <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}> / {product.unit}</span>
                     </div>
                     <Link to={`/products`} className="btn btn-outline btn-sm">

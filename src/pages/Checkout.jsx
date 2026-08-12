@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { createOrder } from '../services/firebaseDb';
+import { formatINR } from '../utils/currency';
 
 export default function Checkout() {
   const { cartItems, getTotal, clearCart } = useCart();
@@ -59,6 +60,7 @@ export default function Checkout() {
       clearCart();
       showToast('Order placed successfully!', 'success');
     } catch (err) {
+      console.error('Order checkout failed:', err);
       showToast('Failed to place order. Try again.', 'error');
     } finally {
       setSubmitting(false);
@@ -151,7 +153,7 @@ export default function Checkout() {
               </div>
 
               <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '1rem', marginTop: '2rem' }} disabled={submitting}>
-                {submitting ? 'Placing Order...' : `Place Order ($${getTotal().toFixed(2)})`}
+                {submitting ? 'Placing Order...' : `Place Order (${formatINR(getTotal())})`}
               </button>
             </form>
           </div>
@@ -166,9 +168,9 @@ export default function Checkout() {
                   <img src={item.product.imageUrl} alt={item.product.name} style={{ width: '50px', height: '50px', borderRadius: '8px', objectFit: 'cover' }} />
                   <div style={{ flex: 1, fontSize: '0.9rem' }}>
                     <h4 style={{ margin: 0, fontWeight: 600 }}>{item.product.name}</h4>
-                    <span style={{ color: 'var(--text-muted)' }}>{item.quantity} x ${item.product.price.toFixed(2)}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>{item.quantity} x {formatINR(item.product.price)}</span>
                   </div>
-                  <span style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>${(item.product.price * item.quantity).toFixed(2)}</span>
+                  <span style={{ fontWeight: 'bold', fontSize: '0.95rem' }}>{formatINR(item.product.price * item.quantity)}</span>
                 </div>
               ))}
             </div>
@@ -176,15 +178,15 @@ export default function Checkout() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem', borderTop: '1px solid var(--gray-100)', paddingTop: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Subtotal</span>
-                <span>${(getTotal() - (getTotal() > 40 ? 0 : 5)).toFixed(2)}</span>
+                <span>{formatINR(getTotal() - (getTotal() >= 500 ? 0 : 50))}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Delivery</span>
-                <span>{getTotal() > 40 ? 'FREE' : '$5.00'}</span>
+                <span>{getTotal() >= 500 ? 'FREE' : formatINR(50)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 'bold', marginTop: '0.5rem', color: 'var(--primary)' }}>
                 <span>Grand Total</span>
-                <span>${getTotal().toFixed(2)}</span>
+                <span>{formatINR(getTotal())}</span>
               </div>
             </div>
           </div>

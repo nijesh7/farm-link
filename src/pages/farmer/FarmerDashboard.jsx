@@ -8,7 +8,9 @@ import {
 } from '../../services/firebaseDb';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { Plus, Edit2, Trash2, Check, DollarSign, Package, ShoppingBag } from 'lucide-react';
+import { Plus, Edit2, Trash2, Check, DollarSign, Package, ShoppingBag, Search } from 'lucide-react';
+import { getCategoryImage } from '../../data/categoryImages';
+import { formatINR } from '../../utils/currency';
 
 const CATEGORIES = ['Vegetables', 'Fruits', 'Grains', 'Pulses', 'Leafy Greens', 'Dairy', 'Organic Products'];
 
@@ -19,6 +21,7 @@ export default function FarmerDashboard() {
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [salesSum, setSalesSum] = useState(0);
+  const [catalogSearch, setCatalogSearch] = useState('');
 
   // Form Mode: 'list', 'add', 'edit'
   const [viewMode, setViewMode] = useState('list');
@@ -140,6 +143,10 @@ export default function FarmerDashboard() {
   };
 
   const activeProductsCount = products.filter((p) => p.quantity > 0).length;
+  const visibleProducts = products.filter((product) => {
+    const query = catalogSearch.trim().toLowerCase();
+    return !query || product.name.toLowerCase().includes(query) || product.category.toLowerCase().includes(query);
+  });
 
   return (
     <div style={{ backgroundColor: 'var(--gray-50)', flex: 1, padding: '3rem 0' }}>
@@ -194,7 +201,7 @@ export default function FarmerDashboard() {
             </div>
             <div>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>My Gross Sales</span>
-              <h3 style={{ fontSize: '1.5rem' }}>${salesSum.toFixed(2)}</h3>
+              <h3 style={{ fontSize: '1.5rem' }}>{formatINR(salesSum)}</h3>
             </div>
           </div>
         </div>
@@ -218,6 +225,20 @@ export default function FarmerDashboard() {
               )}
             </div>
 
+            {viewMode === 'list' && products.length > 0 && (
+              <div style={{ position: 'relative', maxWidth: '360px', marginBottom: '1.5rem' }}>
+                <Search size={16} style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input
+                  type="search"
+                  className="form-input"
+                  placeholder="Search crops or categories..."
+                  value={catalogSearch}
+                  onChange={(e) => setCatalogSearch(e.target.value)}
+                  style={{ paddingLeft: '2.5rem' }}
+                />
+              </div>
+            )}
+
             {/* View Catalog Lists */}
             {viewMode === 'list' && (
               products.length === 0 ? (
@@ -228,6 +249,10 @@ export default function FarmerDashboard() {
                   <button className="btn btn-primary btn-sm" onClick={handleOpenAdd}>
                     Add First Crop
                   </button>
+                </div>
+              ) : visibleProducts.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem 1.5rem', color: 'var(--text-muted)' }}>
+                  No listings match “{catalogSearch}”.
                 </div>
               ) : (
                 <div style={{ overflowX: 'auto' }}>
@@ -243,14 +268,14 @@ export default function FarmerDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {products.map((p) => (
+                      {visibleProducts.map((p) => (
                         <tr key={p.id} style={{ borderBottom: '1px solid var(--gray-100)', fontSize: '0.95rem' }}>
                           <td style={{ padding: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <img src={p.imageUrl} alt={p.name} style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
                             <strong style={{ color: 'var(--gray-800)' }}>{p.name}</strong>
                           </td>
                           <td style={{ padding: '1rem' }}>{p.category}</td>
-                          <td style={{ padding: '1rem', fontWeight: 600 }}>${p.price.toFixed(2)}</td>
+                          <td style={{ padding: '1rem', fontWeight: 600 }}>{formatINR(p.price)}</td>
                           <td style={{ padding: '1rem' }}>{p.quantity} {p.unit}s</td>
                           <td style={{ padding: '1rem' }}>
                             <span className={`badge ${p.quantity > 0 ? 'badge-success' : 'badge-danger'}`}>
@@ -262,7 +287,7 @@ export default function FarmerDashboard() {
                               <button className="btn btn-outline btn-sm" style={{ padding: '0.4rem' }} onClick={() => handleOpenEdit(p)} title="Edit product">
                                 <Edit2 size={14} />
                               </button>
-                              <button className="btn btn-outline btn-sm" style={{ padding: '0.4rem', color: 'var(--danger)', borderColor: 'rgba(217,83,79,0.2)' }} onClick={() => handleDeleteClick(p.id)} title="Delete product">
+                              <button className="btn btn-outline btn-sm" style={{ padding: '0.4rem', color: 'var(--danger)', borderColor: 'rgba(217,83,79,0.2)' }} onClick={() => handleDeleteClick(p.id)} title="Delete crop listing">
                                 <Trash2 size={14} />
                               </button>
                             </div>
@@ -297,9 +322,19 @@ export default function FarmerDashboard() {
                   </div>
                 </div>
 
+                <div style={{ marginTop: '0.5rem', marginBottom: '1.5rem' }}>
+                  <span className="form-label">Listing image preview</span>
+                  <img
+                    src={getCategoryImage(formState.category)}
+                    alt={`${formState.category} default`}
+                    style={{ display: 'block', width: '100%', maxWidth: '280px', height: '150px', objectFit: 'cover', borderRadius: '10px', border: '1px solid var(--gray-200)' }}
+                  />
+                  <small style={{ color: 'var(--text-muted)' }}>A category image is added automatically when you save this listing.</small>
+                </div>
+
                 <div className="form-row">
                   <div className="form-group">
-                    <label className="form-label" htmlFor="price">Price (USD) *</label>
+                    <label className="form-label" htmlFor="price">Price (₹) *</label>
                     <input type="number" step="0.01" id="price" className="form-input" placeholder="4.99" value={formState.price} onChange={handleInputChange} required />
                   </div>
 
@@ -371,7 +406,7 @@ export default function FarmerDashboard() {
                           <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                             {farmerItems.map((item, idx) => (
                               <li key={idx} style={{ fontSize: '0.9rem', color: 'var(--gray-800)' }}>
-                                🥕 <strong>{item.product.name}</strong> - {item.quantity} x {item.product.unit}s (${(item.product.price * item.quantity).toFixed(2)})
+                                🥕 <strong>{item.product.name}</strong> - {item.quantity} x {item.product.unit}s ({formatINR(item.product.price * item.quantity)})
                               </li>
                             ))}
                           </ul>
@@ -395,7 +430,7 @@ export default function FarmerDashboard() {
                         <span style={{ color: 'var(--text-muted)' }}>Ordered on: {new Date(order.createdAt).toLocaleDateString()}</span>
                         <div>
                           <span style={{ color: 'var(--text-muted)' }}>Farmer Revenue: </span>
-                          <strong style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>${farmerSubtotal.toFixed(2)}</strong>
+                          <strong style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>{formatINR(farmerSubtotal)}</strong>
                         </div>
                       </div>
                     </div>
@@ -423,9 +458,9 @@ export default function FarmerDashboard() {
           }}
         >
           <div className="card" style={{ maxWidth: '420px', padding: '2rem', textAlign: 'center' }}>
-            <h3 style={{ marginBottom: '0.75rem' }}>Delete Crop Listing?</h3>
+              <h3 style={{ marginBottom: '0.75rem' }}>Remove Crop Listing?</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '2rem' }}>
-              Are you sure you want to delete this listing? This action cannot be undone.
+              Use this when a crop has sold out or is no longer available. This action cannot be undone.
             </p>
             <div style={{ display: 'flex', gap: '1rem' }}>
               <button className="btn btn-danger" style={{ flex: 1 }} onClick={handleConfirmDelete}>

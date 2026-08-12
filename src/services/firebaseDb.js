@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { SEED_PRODUCTS } from '../data/seedProducts';
+import { getCategoryImage, getProductImage } from '../data/categoryImages';
 
 const toPlainDate = (value) => {
   if (!value) return null;
@@ -30,6 +31,7 @@ const mapDoc = (docSnap) => {
   return {
     id: docSnap.id,
     ...data,
+    imageUrl: getProductImage(data),
     createdAt: toPlainDate(data.createdAt),
   };
 };
@@ -86,6 +88,7 @@ export const saveProduct = async (productData, farmer) => {
         price: parseFloat(productData.price),
         unit: productData.unit,
         quantity: parseInt(productData.quantity),
+        imageUrl: getCategoryImage(productData.category),
       });
       return productData.id;
     }
@@ -99,9 +102,7 @@ export const saveProduct = async (productData, farmer) => {
       price: parseFloat(productData.price),
       unit: productData.unit,
       quantity: parseInt(productData.quantity),
-      imageUrl:
-        productData.imageUrl ||
-        'https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&q=80&w=600',
+      imageUrl: getCategoryImage(productData.category),
       createdAt: serverTimestamp(),
     });
 
@@ -127,6 +128,16 @@ export const deleteProduct = async (productId, farmerId) => {
 
 export const createOrder = async (orderData) => {
   try {
+    const estimatedDeliveryDate = new Date();
+    estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 2);
+    const farmerIds = [...new Set(orderData.items
+      .map((item) => item.product?.farmerId)
+      .filter(Boolean))];
+
+    if (farmerIds.length === 0) {
+      throw new Error('Your cart does not contain valid farmer products.');
+    }
+
     const docRef = await addDoc(collection(db, 'orders'), {
       customerId: orderData.customerId,
       customerName: orderData.customerName,
@@ -134,23 +145,37 @@ export const createOrder = async (orderData) => {
       totalAmount: orderData.totalAmount,
       deliveryAddress: orderData.deliveryAddress,
       phone: orderData.phone,
+      farmerIds,
       status: 'Pending',
+      estimatedDeliveryDate: estimatedDeliveryDate.toISOString(),
       createdAt: serverTimestamp(),
     });
 
-    const updates = orderData.items.map(async (item) => {
-      const pRef = doc(db, 'products', item.product.id);
-      const pSnap = await getDoc(pRef);
-      if (pSnap.exists()) {
-        const newQty = Math.max(0, pSnap.data().quantity - item.quantity);
-        await updateDoc(pRef, { quantity: newQty });
-      }
-    });
-    await Promise.all(updates);
-
-    return { id: docRef.id, ...orderData, status: 'Pending', createdAt: new Date().toISOString() };
+    return {
+      id: docRef.id,
+      ...orderData,
+      status: 'Pending',
+      estimatedDeliveryDate: estimatedDeliveryDate.toISOString(),
+      createdAt: new Date().toISOString(),
+    };
   } catch (err) {
     console.error('createOrder error:', err);
+    throw err;
+  }
+};
+
+export const cancelCustomerOrder = async (orderId, customerId) => {
+  try {
+    const orderRef = doc(db, 'orders', orderId);
+    const orderSnap = await getDoc(orderRef);
+    if (!orderSnap.exists()) throw new Error('Order not found');
+    if (orderSnap.data().customerId !== customerId) throw new Error('Unauthorized');
+    if (orderSnap.data().status !== 'Pending') {
+      throw new Error('Only pending orders can be cancelled');
+    }
+    await updateDoc(orderRef, { status: 'Cancelled' });
+  } catch (err) {
+    console.error('cancelCustomerOrder error:', err);
     throw err;
   }
 };
@@ -170,11 +195,11 @@ export const getCustomerOrders = async (customerId) => {
 
 export const getFarmerOrders = async (farmerId) => {
   try {
-    const snap = await getDocs(query(collection(db, 'orders'), orderBy('createdAt', 'desc')));
-    const allOrders = snap.docs.map(mapDoc);
-    return allOrders.filter((order) =>
-      order.items?.some((item) => item.product?.farmerId === farmerId)
-    );
+    const q = query(collection(db, 'orders'), where('farmerIds', 'array-contains', farmerId));
+    const snap = await getDocs(q);
+    return snap.docs
+      .map(mapDoc)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   } catch (err) {
     console.error('getFarmerOrders error:', err);
     throw err;

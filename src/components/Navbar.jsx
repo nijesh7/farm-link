@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Leaf, ShoppingCart, User, LogOut, Menu, X, Sun, Moon } from 'lucide-react';
+import { Leaf, ShoppingCart, Heart, User, LogOut, Menu, X, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
 
 export default function Navbar() {
   const { currentUser, logout } = useAuth();
   const { cartItems } = useCart();
+  const { savedProducts } = useWishlist();
   const { showToast } = useToast();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -40,10 +42,17 @@ export default function Navbar() {
           <NavLink to="/products" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Products</NavLink>
           <NavLink to="/about" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>About</NavLink>
           <NavLink to="/contact" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>Contact</NavLink>
+          <NavLink to="/faq" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>FAQ</NavLink>
         </div>
 
         {/* Desktop actions */}
         <div className="nav-actions" style={{ display: 'flex', alignItems: 'center' }}>
+          {currentUser?.role === 'customer' && (
+            <Link to="/saved-items" className="nav-cart-btn" aria-label="Saved items" title="Saved items">
+              <Heart size={21} />
+              {savedProducts.length > 0 && <span className="cart-count">{savedProducts.length}</span>}
+            </Link>
+          )}
           {currentUser?.role === 'customer' && (
             <Link to="/cart" className="nav-cart-btn" aria-label="Cart">
               <ShoppingCart size={22} />
@@ -122,6 +131,9 @@ export default function Navbar() {
           <NavLink to="/products" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Products</NavLink>
           <NavLink to="/about" className="nav-link" onClick={() => setMobileMenuOpen(false)}>About</NavLink>
           <NavLink to="/contact" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Contact</NavLink>
+          <NavLink to="/faq" className="nav-link" onClick={() => setMobileMenuOpen(false)}>FAQ</NavLink>
+          <NavLink to="/farmer-guide" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Farmer Guide</NavLink>
+          {currentUser?.role === 'customer' && <NavLink to="/saved-items" className="nav-link" onClick={() => setMobileMenuOpen(false)}>Saved Items</NavLink>}
           
           <div style={{ height: '1px', backgroundColor: 'var(--gray-100)', margin: '0.5rem 0' }}></div>
           

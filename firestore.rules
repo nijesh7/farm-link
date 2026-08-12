@@ -10,20 +10,36 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
+    function hasRole(role) {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+
     match /users/{userId} {
-      allow read, write: if isOwner(userId);
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId)
+        && request.resource.data.role in ['customer', 'farmer'];
+      allow update: if isOwner(userId)
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.email == resource.data.email;
     }
 
     match /products/{productId} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.farmerId == request.auth.uid;
-      allow update, delete: if signedIn() && resource.data.farmerId == request.auth.uid;
+      allow create: if hasRole('farmer') && request.resource.data.farmerId == request.auth.uid;
+      allow update, delete: if hasRole('farmer') && resource.data.farmerId == request.auth.uid;
     }
 
     match /orders/{orderId} {
-      allow create: if signedIn() && request.resource.data.customerId == request.auth.uid;
-      allow read: if signedIn();
-      allow update: if signedIn();
+      allow create: if hasRole('customer') && request.resource.data.customerId == request.auth.uid;
+      allow read: if hasRole('customer') && resource.data.customerId == request.auth.uid
+        || hasRole('farmer') && request.auth.uid in resource.data.farmerIds;
+      allow update: if hasRole('customer')
+          && resource.data.customerId == request.auth.uid
+          && resource.data.status == 'Pending'
+          && request.resource.data.status == 'Cancelled'
+        || hasRole('farmer') && request.auth.uid in resource.data.farmerIds;
+      allow delete: if hasRole('customer') && resource.data.customerId == request.auth.uid;
     }
   }
 }

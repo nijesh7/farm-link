@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { getCustomerOrders } from '../../services/firebaseDb';
+import { cancelCustomerOrder, getCustomerOrders } from '../../services/firebaseDb';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { ShoppingBag, MapPin, Phone, User, Clock, FileText, Settings, Save } from 'lucide-react';
+import { formatINR } from '../../utils/currency';
+import { ShoppingBag, MapPin, Phone, User, Clock, FileText, Settings, Save, ChevronDown } from 'lucide-react';
+
+const ORDER_STEPS = ['Pending', 'In Transit', 'Delivered'];
 
 export default function CustomerDashboard() {
   const { currentUser, updateProfile } = useAuth();
   const { showToast } = useToast();
   
   const [orders, setOrders] = useState([]);
+  const [expandedOrderId, setExpandedOrderId] = useState(null);
+  const [deletingOrderId, setDeletingOrderId] = useState(null);
   
   // Profile edit state
   const [isEditing, setIsEditing] = useState(false);
@@ -37,8 +42,34 @@ export default function CustomerDashboard() {
     }
   };
 
+  const handleDeleteOrder = async (order) => {
+    if (!window.confirm(`Cancel order ${order.id}? The order will remain in your history as cancelled.`)) return;
+
+    setDeletingOrderId(order.id);
+    try {
+      await cancelCustomerOrder(order.id, currentUser.uid);
+      setOrders((currentOrders) => currentOrders.map((currentOrder) => (
+        currentOrder.id === order.id ? { ...currentOrder, status: 'Cancelled' } : currentOrder
+      )));
+      setExpandedOrderId(null);
+      showToast('Order cancelled successfully.', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('This order can no longer be cancelled.', 'error');
+    } finally {
+      setDeletingOrderId(null);
+    }
+  };
+
   const pendingCount = orders.filter((o) => o.status === 'Pending' || o.status === 'In Transit').length;
   const completedCount = orders.filter((o) => o.status === 'Delivered').length;
+
+  const formatDeliveryDate = (order) => {
+    if (!order.estimatedDeliveryDate) return 'Within 2 business days';
+    return new Date(order.estimatedDeliveryDate).toLocaleDateString(undefined, {
+      weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
+    });
+  };
 
   return (
     <div style={{ backgroundColor: 'var(--gray-50)', flex: 1, padding: '3rem 0' }}>
@@ -93,7 +124,17 @@ export default function CustomerDashboard() {
           
           {/* Recent Orders */}
           <div>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem' }}>Recent Orders</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'end', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+              <div>
+                <h2 style={{ fontSize: '1.5rem', marginBottom: '0.35rem' }}>Recent Orders</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Open an order to see delivery and item details.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '0.55rem', fontSize: '0.78rem', color: 'var(--text-muted)', alignItems: 'center' }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--warning)' }} /> Pending
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--info)' }} /> In transit
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)' }} /> Delivered
+              </div>
+            </div>
             {orders.length === 0 ? (
               <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
                 <ShoppingBag size={40} color="var(--text-muted)" style={{ margin: '0 auto 1rem' }} />
@@ -102,7 +143,9 @@ export default function CustomerDashboard() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                {orders.map((order) => (
+                {orders.map((order) => {
+                  const isExpanded = expandedOrderId === order.id;
+                  return (
                   <div key={order.id} className="card" style={{ padding: '1.5rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--gray-100)', paddingBottom: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                       <div>
@@ -113,6 +156,27 @@ export default function CustomerDashboard() {
                         {order.status}
                       </span>
                     </div>
+
+                    {order.status !== 'Cancelled' && (
+                      <div style={{ padding: '0.85rem 0 0.35rem', marginBottom: '0.65rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
+                          {ORDER_STEPS.map((step, index) => {
+                            const currentStep = ORDER_STEPS.indexOf(order.status);
+                            const isComplete = index <= currentStep;
+                            return (
+                              <div key={step} style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '33.33%', color: isComplete ? 'var(--primary)' : 'var(--text-muted)' }}>
+                                {index > 0 && <span style={{ position: 'absolute', height: '3px', width: '100%', right: '50%', top: '11px', backgroundColor: isComplete ? 'var(--primary)' : 'var(--gray-200)', zIndex: -1 }} />}
+                                <span style={{ width: '24px', height: '24px', display: 'grid', placeItems: 'center', borderRadius: '50%', backgroundColor: isComplete ? 'var(--primary)' : 'var(--gray-200)', color: 'var(--white)', fontSize: '0.72rem', fontWeight: 800 }}>{index + 1}</span>
+                                <span style={{ fontSize: '0.72rem', fontWeight: 700, marginTop: '0.35rem', textAlign: 'center' }}>{step}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                          Estimated delivery: <strong style={{ color: 'var(--text-main)' }}>{formatDeliveryDate(order)}</strong>
+                        </div>
+                      </div>
+                    )}
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       {order.items.map((item, idx) => (
@@ -131,11 +195,72 @@ export default function CustomerDashboard() {
                       <span style={{ color: 'var(--text-muted)' }}>Ordered on: {new Date(order.createdAt).toLocaleDateString()}</span>
                       <div>
                         <span style={{ color: 'var(--text-muted)' }}>Total Amount: </span>
-                        <strong style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>${order.totalAmount.toFixed(2)}</strong>
+                        <strong style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>{formatINR(order.totalAmount)}</strong>
                       </div>
                     </div>
+
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
+                      aria-expanded={isExpanded}
+                      style={{ marginTop: '1rem', width: '100%', justifyContent: 'center' }}
+                    >
+                      <span>{isExpanded ? 'Hide order details' : 'View order details'}</span>
+                      <ChevronDown size={16} style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease' }} />
+                    </button>
+
+                    {isExpanded && (
+                      <div style={{ marginTop: '1rem', padding: '1rem', borderRadius: '10px', backgroundColor: 'var(--gray-50)' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+                          <div>
+                            <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Delivery address</span>
+                            <strong style={{ fontSize: '0.9rem', lineHeight: 1.5 }}>{order.deliveryAddress || 'Not provided'}</strong>
+                          </div>
+                          <div>
+                            <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Contact phone</span>
+                            <strong style={{ fontSize: '0.9rem' }}>{order.phone || 'Not provided'}</strong>
+                          </div>
+                          <div>
+                            <span style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>Estimated delivery</span>
+                            <strong style={{ fontSize: '0.9rem' }}>
+                              {order.status === 'Cancelled'
+                                ? 'Order cancelled'
+                                : order.estimatedDeliveryDate
+                                  ? formatDeliveryDate(order)
+                                  : 'Within 2 business days'}
+                            </strong>
+                          </div>
+                        </div>
+                        <h4 style={{ fontSize: '0.9rem', marginBottom: '0.65rem' }}>Order summary</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+                          {order.items.map((item, index) => (
+                            <div key={`${item.product.id}-${index}`} style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', fontSize: '0.9rem' }}>
+                              <span>{item.product.name} × {item.quantity}</span>
+                              <strong>{formatINR(item.product.price * item.quantity)}</strong>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--gray-200)', paddingTop: '0.75rem', marginTop: '0.75rem', fontSize: '0.9rem' }}>
+                          <span>Delivery & payment</span><strong>Cash on Delivery · Local delivery</strong>
+                        </div>
+                      </div>
+                    )}
+
+                    {order.status === 'Pending' && (
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => handleDeleteOrder(order)}
+                        disabled={deletingOrderId === order.id}
+                        style={{ marginTop: '0.75rem', width: '100%', justifyContent: 'center', color: 'var(--danger)', borderColor: 'rgba(217,83,79,0.35)' }}
+                      >
+                        {deletingOrderId === order.id ? 'Cancelling order...' : 'Cancel order'}
+                      </button>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

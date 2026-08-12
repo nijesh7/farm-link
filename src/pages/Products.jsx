@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Search, SlidersHorizontal, ArrowUpDown, ShoppingCart, Eye, HelpCircle } from 'lucide-react';
+import { Search, SlidersHorizontal, ArrowUpDown, ShoppingCart, Heart, Eye, HelpCircle } from 'lucide-react';
 import { getProducts } from '../services/firebaseDb';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useWishlist } from '../context/WishlistContext';
+import { formatINR } from '../utils/currency';
 
 const CATEGORIES = ['All', 'Vegetables', 'Fruits', 'Grains', 'Pulses', 'Leafy Greens', 'Dairy', 'Organic Products'];
 
@@ -13,12 +15,14 @@ export default function Products() {
   const { addToCart } = useCart();
   const { currentUser } = useAuth();
   const { showToast } = useToast();
+  const { isSaved, toggleSavedProduct } = useWishlist();
   const navigate = useNavigate();
+  const canShop = !currentUser || currentUser.role === 'customer';
 
   // Filters State
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
-  const [maxPrice, setMaxPrice] = useState(10);
+  const [maxPrice, setMaxPrice] = useState(500);
   const [sortBy, setSortBy] = useState('newest');
   
   // Selected product detail modal
@@ -95,6 +99,13 @@ export default function Products() {
     showToast(`Added ${product.name} to cart.`, 'success');
   };
 
+  const handleSaveProduct = (e, product) => {
+    e.stopPropagation();
+    const alreadySaved = isSaved(product.id);
+    toggleSavedProduct(product);
+    showToast(alreadySaved ? `${product.name} removed from saved items.` : `${product.name} saved for later.`, 'success');
+  };
+
   const openDetailModal = (product) => {
     setSelectedProduct(product);
     setDetailQty(1);
@@ -102,6 +113,14 @@ export default function Products() {
 
   const closeDetailModal = () => {
     setSelectedProduct(null);
+  };
+
+  const clearFilters = () => {
+    setSearch('');
+    setCategory('All');
+    setMaxPrice(500);
+    setSortBy('newest');
+    navigate('/products', { replace: true });
   };
 
   const handleModalAddCart = () => {
@@ -159,20 +178,20 @@ export default function Products() {
             <div className="form-group" style={{ margin: '2rem 0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                 <label className="form-label" style={{ margin: 0 }}>Max Price</label>
-                <span style={{ fontWeight: 'bold', color: 'var(--primary)' }}>${maxPrice.toFixed(2)}</span>
+                <span style={{ fontWeight: 'bold', color: 'var(--primary)' }}>{formatINR(maxPrice)}</span>
               </div>
               <input 
                 type="range" 
-                min="1" 
-                max="25" 
-                step="0.5"
+                min="10" 
+                max="2000" 
+                step="10"
                 style={{ width: '100%', accentColor: 'var(--primary)', cursor: 'pointer' }}
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(parseFloat(e.target.value))}
               />
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                <span>$1.00</span>
-                <span>$25.00</span>
+                <span>₹10</span>
+                <span>₹2,000</span>
               </div>
             </div>
 
@@ -228,6 +247,17 @@ export default function Products() {
               ))}
             </div>
 
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', margin: '-0.75rem 0 1.5rem', flexWrap: 'wrap' }}>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                {filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found
+              </span>
+              {(search || category !== 'All' || maxPrice !== 10 || sortBy !== 'newest') && (
+                <button className="btn btn-outline btn-sm" onClick={clearFilters}>
+                  Clear filters
+                </button>
+              )}
+            </div>
+
             {/* Listings Grid */}
             {filteredProducts.length === 0 ? (
               <div className="card" style={{ textAlign: 'center', padding: '4rem 2rem' }}>
@@ -269,7 +299,7 @@ export default function Products() {
                       </div>
                       <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
                         <div>
-                          <span style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--primary)' }}>${product.price}</span>
+                          <span style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--primary)' }}>{formatINR(product.price)}</span>
                         </div>
                         <div style={{ display: 'flex', gap: '0.4rem' }}>
                           <button 
@@ -280,15 +310,28 @@ export default function Products() {
                           >
                             <Eye size={16} />
                           </button>
-                          <button 
-                            className="btn btn-primary btn-sm"
-                            style={{ padding: '0.5rem 0.8rem' }}
-                            onClick={(e) => handleAddToCart(e, product)}
-                            disabled={product.quantity === 0}
-                          >
-                            <ShoppingCart size={16} />
-                            <span>Add</span>
-                          </button>
+                          {currentUser?.role === 'customer' && (
+                            <button
+                              className="btn btn-outline btn-sm"
+                              title={isSaved(product.id) ? 'Remove from saved items' : 'Save for later'}
+                              aria-label={isSaved(product.id) ? `Remove ${product.name} from saved items` : `Save ${product.name} for later`}
+                              style={{ padding: '0.5rem' }}
+                              onClick={(e) => handleSaveProduct(e, product)}
+                            >
+                              <Heart size={16} fill={isSaved(product.id) ? 'var(--danger)' : 'none'} color={isSaved(product.id) ? 'var(--danger)' : 'currentColor'} />
+                            </button>
+                          )}
+                          {canShop && (
+                            <button
+                              className="btn btn-primary btn-sm"
+                              style={{ padding: '0.5rem 0.8rem' }}
+                              onClick={(e) => handleAddToCart(e, product)}
+                              disabled={product.quantity === 0}
+                            >
+                              <ShoppingCart size={16} />
+                              <span>Add</span>
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -350,7 +393,7 @@ export default function Products() {
               <h2 style={{ fontSize: '1.8rem', margin: '0.5rem 0 1rem' }}>{selectedProduct.name}</h2>
               
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary)' }}>${selectedProduct.price}</span>
+                <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--primary)' }}>{formatINR(selectedProduct.price)}</span>
                 <span style={{ color: 'var(--text-muted)' }}>/ {selectedProduct.unit}</span>
               </div>
 
@@ -369,7 +412,7 @@ export default function Products() {
                 </div>
               </div>
 
-              {selectedProduct.quantity > 0 ? (
+              {selectedProduct.quantity > 0 && canShop ? (
                 <div style={{ marginTop: 'auto' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
                     <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Quantity:</span>
@@ -400,9 +443,13 @@ export default function Products() {
                     </button>
                   </div>
                 </div>
-              ) : (
+              ) : selectedProduct.quantity === 0 ? (
                 <button className="btn btn-secondary" style={{ width: '100%', marginTop: 'auto' }} disabled>
                   Out of Stock
+                </button>
+              ) : (
+                <button className="btn btn-outline" style={{ width: '100%', marginTop: 'auto' }} onClick={closeDetailModal}>
+                  Back to marketplace
                 </button>
               )}
             </div>

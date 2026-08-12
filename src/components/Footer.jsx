@@ -24,6 +24,13 @@ export default function Footer() {
               <li><Link to="/products">Browse Products</Link></li>
               <li><Link to="/about">Our Mission</Link></li>
               <li><Link to="/contact">Contact Support</Link></li>
+              <li><Link to="/faq">FAQs</Link></li>
+              <li><Link to="/farmer-guide">Farmer Guide</Link></li>
+              <li><Link to="/delivery">Delivery & Freshness</Link></li>
+              <li><Link to="/stories">Community Stories</Link></li>
+              <li><Link to="/seasonal-picks">Seasonal Picks</Link></li>
+              <li><Link to="/recipes">Farm Recipes</Link></li>
+              <li><Link to="/impact">Our Impact</Link></li>
             </ul>
           </div>
 

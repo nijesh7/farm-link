@@ -1,19 +1,28 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Mail, Lock, Eye, EyeOff, LogIn, ShoppingBag, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [role, setRole] = useState('customer');
+
+  useEffect(() => {
+    const requestedRole = searchParams.get('role');
+    if (requestedRole === 'customer' || requestedRole === 'farmer') {
+      setRole(requestedRole);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,13 +34,16 @@ export default function Login() {
     setSubmitting(true);
     try {
       const user = await login(email, password);
+      if (!user || user.role !== role) {
+        await logout();
+        throw new Error(`This is a ${user?.role || 'different'} account. Please use ${user?.role || 'the correct'} login.`);
+      }
       showToast(`Welcome back, ${user.name}!`, 'success');
       
-      // Redirect based on role
-      if (user.role === 'farmer') {
+      if (role === 'farmer') {
         navigate('/farmer');
       } else {
-        navigate('/products');
+        navigate('/customer');
       }
     } catch (err) {
       showToast(err.message || 'Invalid credentials.', 'error');
@@ -46,6 +58,37 @@ export default function Login() {
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h1 style={{ fontSize: '2.25rem', marginBottom: '0.5rem', color: 'var(--primary)' }}>Welcome Back</h1>
           <p style={{ color: 'var(--text-muted)' }}>Login to access your marketplace account</p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setRole('customer')}
+            style={{
+              padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
+              border: '2px solid', borderRadius: '14px', boxShadow: 'none', color: 'var(--text-main)',
+              borderColor: role === 'customer' ? 'var(--primary)' : 'var(--gray-200)',
+              backgroundColor: role === 'customer' ? 'var(--primary-bg)' : 'var(--white)',
+            }}
+          >
+            <ShoppingBag size={22} color={role === 'customer' ? 'var(--primary)' : 'var(--text-muted)'} />
+            <span style={{ fontWeight: 600 }}>Customer Login</span>
+          </button>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setRole('farmer')}
+            style={{
+              padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
+              border: '2px solid', borderRadius: '14px', boxShadow: 'none', color: 'var(--text-main)',
+              borderColor: role === 'farmer' ? 'var(--secondary)' : 'var(--gray-200)',
+              backgroundColor: role === 'farmer' ? 'rgba(212, 163, 115, 0.08)' : 'var(--white)',
+            }}
+          >
+            <Users size={22} color={role === 'farmer' ? 'var(--secondary)' : 'var(--text-muted)'} />
+            <span style={{ fontWeight: 600 }}>Farmer Login</span>
+          </button>
         </div>
 
         {/* Demo helpers */}
@@ -117,15 +160,15 @@ export default function Login() {
             </label>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem' }} disabled={submitting}>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem', backgroundColor: role === 'farmer' ? 'var(--secondary)' : 'var(--primary)', borderColor: role === 'farmer' ? 'var(--secondary)' : 'var(--primary)' }} disabled={submitting}>
             <LogIn size={18} />
-            <span>{submitting ? 'Logging In...' : 'Login'}</span>
+            <span>{submitting ? 'Logging In...' : `Login as ${role === 'farmer' ? 'Farmer' : 'Customer'}`}</span>
           </button>
         </form>
 
         <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
           Don't have an account?{' '}
-          <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+          <Link to={`/register?role=${role}`} style={{ color: 'var(--primary)', fontWeight: 600 }}>
             Register Now
           </Link>
         </div>

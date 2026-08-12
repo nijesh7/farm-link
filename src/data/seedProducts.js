@@ -6,7 +6,7 @@ export const SEED_PRODUCTS = [
     description:
       'Freshly picked, sweet organic strawberries grown without any synthetic pesticides. Perfect for snacking, desserts, or smoothies.',
     category: 'Fruits',
-    price: 4.99,
+    price: 249,
     unit: 'lb',
     quantity: 45,
     imageUrl:
@@ -19,7 +19,7 @@ export const SEED_PRODUCTS = [
     description:
       'Crisp, nutrient-rich spinach leaves harvested daily. Great for salads, cooking, or morning green juices.',
     category: 'Leafy Greens',
-    price: 2.49,
+    price: 79,
     unit: 'bunch',
     quantity: 30,
     imageUrl:
@@ -32,7 +32,7 @@ export const SEED_PRODUCTS = [
     description:
       'Free-range, organic brown eggs from pasture-raised chickens. Large size and rich, golden yolks.',
     category: 'Dairy',
-    price: 5.99,
+    price: 219,
     unit: 'dozen',
     quantity: 20,
     imageUrl:
@@ -45,7 +45,7 @@ export const SEED_PRODUCTS = [
     description:
       'Stoneground whole grain wheat flour made from organic heritage grains. Enhances texture and nutrition of bread.',
     category: 'Grains',
-    price: 6.5,
+    price: 399,
     unit: 'bag (5lb)',
     quantity: 15,
     imageUrl:
@@ -58,7 +58,7 @@ export const SEED_PRODUCTS = [
     description:
       'Premium dried organic red kidney beans. High protein content, ideal for chilis, stews, and side dishes.',
     category: 'Pulses',
-    price: 3.2,
+    price: 149,
     unit: 'lb',
     quantity: 60,
     imageUrl:
@@ -71,7 +71,7 @@ export const SEED_PRODUCTS = [
     description:
       'Sweet, juicy heirloom tomatoes. Outstanding flavor for salads or sauces.',
     category: 'Vegetables',
-    price: 3.99,
+    price: 99,
     unit: 'lb',
     quantity: 25,
     imageUrl:
