@@ -92,7 +92,7 @@ export function CartProvider({ children }) {
   const getDeliveryCharge = () => {
     const subtotal = getSubtotal();
     if (subtotal === 0) return 0;
-    return subtotal >= 500 ? 0 : 50;
+    return subtotal >= 300 ? 0 : 20;
   };
 
   const getTotal = () => getSubtotal() + getDeliveryCharge();

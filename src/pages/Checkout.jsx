@@ -178,11 +178,11 @@ export default function Checkout() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem', borderTop: '1px solid var(--gray-100)', paddingTop: '1rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Subtotal</span>
-                <span>{formatINR(getTotal() - (getTotal() >= 500 ? 0 : 50))}</span>
+                <span>{formatINR(getTotal() - (getTotal() >= 300 ? 0 : 20))}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Delivery</span>
-                <span>{getTotal() >= 500 ? 'FREE' : formatINR(50)}</span>
+                <span>{getTotal() >= 300 ? 'FREE' : formatINR(20)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 'bold', marginTop: '0.5rem', color: 'var(--primary)' }}>
                 <span>Grand Total</span>

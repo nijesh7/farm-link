@@ -127,7 +127,7 @@ export default function Cart() {
                 </div>
                 {delivery > 0 && (
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', backgroundColor: 'var(--primary-bg)', padding: '0.5rem 0.75rem', borderRadius: '8px' }}>
-                    Add <strong>{formatINR(500 - subtotal)}</strong> more to get free delivery!
+                    Add <strong>{formatINR(300 - subtotal)}</strong> more to get free delivery!
                   </p>
                 )}
               </div>

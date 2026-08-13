@@ -34,6 +34,7 @@ import SavedItems from './pages/SavedItems';
 // Protected Dashboards
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import FarmerDashboard from './pages/farmer/FarmerDashboard';
+import FarmerOrders from './pages/farmer/FarmerOrders';
 
 function App() {
   return (
@@ -103,6 +104,14 @@ function App() {
                         <FarmerDashboard />
                       </ProtectedRoute>
                     } 
+                  /> 
+                  <Route
+                    path="/farmer/orders"
+                    element={
+                      <ProtectedRoute allowedRoles={['farmer']}>
+                        <FarmerOrders />
+                      </ProtectedRoute>
+                    }
                   />
                   
                   {/* Fallback to Home */}

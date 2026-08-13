@@ -70,6 +70,9 @@ export default function Navbar() {
                 <User size={16} />
                 <span>Dashboard</span>
               </Link>
+              {currentUser.role === 'farmer' && (
+                <Link to="/farmer/orders" className="btn btn-outline btn-sm">Orders</Link>
+              )}
               <button 
                 onClick={handleLogout} 
                 className="btn btn-primary btn-sm"
@@ -147,6 +150,11 @@ export default function Navbar() {
               >
                 Dashboard
               </Link>
+              {currentUser.role === 'farmer' && (
+                <Link to="/farmer/orders" className="btn btn-outline" style={{ width: '100%' }} onClick={() => setMobileMenuOpen(false)}>
+                  Customer Orders
+                </Link>
+              )}
               <button 
                 onClick={() => { handleLogout(); setMobileMenuOpen(false); }} 
                 className="btn btn-danger"

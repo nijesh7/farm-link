@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   getFarmerProducts,
   getFarmerOrders,
@@ -161,6 +162,7 @@ export default function FarmerDashboard() {
           <span className="badge" style={{ backgroundColor: 'rgba(212, 163, 115, 0.15)', color: 'var(--secondary)', padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
             Account Role: Farmer Partner
           </span>
+          <Link to="/farmer/orders" className="btn btn-primary btn-sm">View Customer Orders</Link>
         </div>
 
         {/* Stats Row */}
