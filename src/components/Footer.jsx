@@ -22,6 +22,9 @@ export default function Footer() {
             <ul className="footer-links">
               <li><Link to="/">Home</Link></li>
               <li><Link to="/products">Browse Products</Link></li>
+              <li><Link to="/market-trends">Live Market Trends</Link></li>
+              <li><Link to="/traceability">Batch QR Traceability</Link></li>
+              <li><Link to="/pre-orders">CSA Harvest Pre-Orders</Link></li>
               <li><Link to="/about">Our Mission</Link></li>
               <li><Link to="/contact">Contact Support</Link></li>
               <li><Link to="/faq">FAQs</Link></li>

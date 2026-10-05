@@ -59,8 +59,13 @@ export const getProducts = async () => {
 
     return snap.docs.map(mapDoc);
   } catch (err) {
-    console.error('getProducts error:', err);
-    throw err;
+    console.warn('getProducts Firestore fallback to seed:', err);
+    return SEED_PRODUCTS.map((product, idx) => ({
+      id: 'prod_' + (idx + 1),
+      ...product,
+      imageUrl: getProductImage(product),
+      createdAt: new Date().toISOString(),
+    }));
   }
 };
 
@@ -129,7 +134,7 @@ export const deleteProduct = async (productId, farmerId) => {
 export const createOrder = async (orderData) => {
   try {
     const estimatedDeliveryDate = new Date();
-    estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 2);
+    estimatedDeliveryDate.setDate(estimatedDeliveryDate.getDate() + 1); // Prompt next-day delivery
     const farmerIds = [...new Set(orderData.items
       .map((item) => item.product?.farmerId)
       .filter(Boolean))];
@@ -211,6 +216,48 @@ export const updateOrderStatus = async (orderId, newStatus) => {
     await updateDoc(doc(db, 'orders', orderId), { status: newStatus });
   } catch (err) {
     console.error('updateOrderStatus error:', err);
+    throw err;
+  }
+};
+
+/* ── ADMIN MANAGEMENT SERVICES ── */
+export const getAllOrders = async () => {
+  try {
+    const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(mapDoc);
+  } catch (err) {
+    console.error('getAllOrders error:', err);
+    return [];
+  }
+};
+
+export const getAllUsers = async () => {
+  try {
+    const snap = await getDocs(collection(db, 'users'));
+    return snap.docs.map((d) => ({ uid: d.id, ...d.data() }));
+  } catch (err) {
+    console.error('getAllUsers error:', err);
+    return [];
+  }
+};
+
+export const adminDeleteProduct = async (productId) => {
+  try {
+    const docRef = doc(db, 'products', productId);
+    await deleteDoc(docRef);
+  } catch (err) {
+    console.error('adminDeleteProduct error:', err);
+    throw err;
+  }
+};
+
+export const adminUpdateUser = async (userId, updates) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, updates);
+  } catch (err) {
+    console.error('adminUpdateUser error:', err);
     throw err;
   }
 };

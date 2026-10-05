@@ -19,8 +19,11 @@ export default function Home() {
 
   useEffect(() => {
     getProducts().then((products) => {
-      setFeaturedProducts(products.slice(0, 3));
-    }).catch(err => console.error(err));
+      setFeaturedProducts((products || []).slice(0, 3));
+    }).catch(err => {
+      console.error(err);
+      setFeaturedProducts([]);
+    });
   }, []);
 
   return (
@@ -307,6 +310,81 @@ export default function Home() {
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Track orders, view total active listings, modify prices dynamically, and manage stock quantities.</p>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Advanced Agri-Tech Innovations Showcase */}
+      <section className="section" style={{ backgroundColor: 'var(--primary-bg)' }}>
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+            <span className="badge badge-primary" style={{ marginBottom: '0.5rem' }}>Intelligent Agriculture</span>
+            <h2 style={{ fontSize: '2.4rem', fontWeight: 800, marginBottom: '0.75rem' }}>Pioneering Fair, Transparent Food Systems</h2>
+            <p style={{ color: 'var(--text-muted)', maxWidth: '650px', margin: '0 auto' }}>
+              Cutting-edge tools empowering both growers and conscious consumers.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem' }}>
+            {/* Market Trends Card */}
+            <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
+              <div style={{ backgroundColor: 'var(--card-bg)', width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem', boxShadow: 'var(--shadow-sm)', fontSize: '1.5rem' }}>
+                📈
+              </div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Live Mandi Price Trends</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                Compare wholesale mandi rates vs retail shelf prices. See exactly how much farmers earn and how much you save.
+              </p>
+              <Link to="/market-trends" className="btn btn-outline btn-sm" style={{ marginTop: 'auto', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span>Explore Price Index</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            {/* Traceability Card */}
+            <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
+              <div style={{ backgroundColor: 'var(--card-bg)', width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem', boxShadow: 'var(--shadow-sm)', fontSize: '1.5rem' }}>
+                🔍
+              </div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Batch QR Traceability</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                Inspect farm GPS coordinates, soil pH testing, harvest time stamps, and chemical residue test certificates.
+              </p>
+              <Link to="/traceability" className="btn btn-outline btn-sm" style={{ marginTop: 'auto', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span>Verify a Batch</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            {/* CSA Pre-Orders Card */}
+            <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
+              <div style={{ backgroundColor: 'var(--card-bg)', width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem', boxShadow: 'var(--shadow-sm)', fontSize: '1.5rem' }}>
+                🌱
+              </div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>CSA Harvest Pre-Orders</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                Pre-book upcoming seasonal harvests (Alphonso Mangoes, Kashmiri Saffron, Cold-Pressed Oils) at up to 25% off.
+              </p>
+              <Link to="/pre-orders" className="btn btn-outline btn-sm" style={{ marginTop: 'auto', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span>Pre-Book Harvests</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            {/* AI Copilot Card */}
+            <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', borderRadius: '16px', border: '2px solid var(--primary-light)' }}>
+              <div style={{ backgroundColor: 'var(--card-bg)', width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem', boxShadow: 'var(--shadow-sm)', fontSize: '1.5rem' }}>
+                🤖
+              </div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>AI AgriCopilot</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                24/7 AI advisory for crop disease diagnosis, organic remedies, soil NPK calculators, recipe pairing & storage life tips.
+              </p>
+              <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary)', fontWeight: 700, fontSize: '0.85rem' }}>
+                <span>Available floating bottom right</span>
+                <span>✨</span>
               </div>
             </div>
           </div>

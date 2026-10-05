@@ -16,30 +16,76 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isOwner(userId);
+      allow read: if isOwner(userId) || hasRole('admin');
       allow create: if isOwner(userId)
-        && request.resource.data.role in ['customer', 'farmer'];
-      allow update: if isOwner(userId)
-        && request.resource.data.role == resource.data.role
-        && request.resource.data.email == resource.data.email;
+        && request.resource.data.role in ['customer', 'farmer', 'admin', 'buyer'];
+      allow update: if isOwner(userId) || hasRole('admin');
+      allow delete: if hasRole('admin');
     }
 
     match /products/{productId} {
       allow read: if true;
-      allow create: if hasRole('farmer') && request.resource.data.farmerId == request.auth.uid;
-      allow update, delete: if hasRole('farmer') && resource.data.farmerId == request.auth.uid;
+      allow create: if (hasRole('farmer') && request.resource.data.farmerId == request.auth.uid) || hasRole('admin');
+      allow update, delete: if (hasRole('farmer') && resource.data.farmerId == request.auth.uid) || hasRole('admin');
     }
 
     match /orders/{orderId} {
-      allow create: if hasRole('customer') && request.resource.data.customerId == request.auth.uid;
-      allow read: if hasRole('customer') && resource.data.customerId == request.auth.uid
-        || hasRole('farmer') && request.auth.uid in resource.data.farmerIds;
-      allow update: if hasRole('customer')
-          && resource.data.customerId == request.auth.uid
+      allow create: if ((hasRole('customer') || hasRole('buyer')) && request.resource.data.customerId == request.auth.uid) || hasRole('admin');
+      allow read: if ((hasRole('customer') || hasRole('buyer')) && resource.data.customerId == request.auth.uid)
+        || (hasRole('farmer') && request.auth.uid in resource.data.farmerIds)
+        || hasRole('admin');
+      allow update: if hasRole('admin')
+        || (resource.data.customerId == request.auth.uid
           && resource.data.status == 'Pending'
-          && request.resource.data.status == 'Cancelled'
-        || hasRole('farmer') && request.auth.uid in resource.data.farmerIds;
-      allow delete: if hasRole('customer') && resource.data.customerId == request.auth.uid;
+          && request.resource.data.status == 'Cancelled')
+        || (hasRole('farmer') && request.auth.uid in resource.data.farmerIds);
+      allow delete: if (resource.data.customerId == request.auth.uid) || hasRole('admin');
+    }
+
+    match /bulk_requirements/{reqId} {
+      allow read: if true;
+      allow create: if (hasRole('buyer') || hasRole('admin') || signedIn());
+      allow update, delete: if (resource.data.buyerId == request.auth.uid) || hasRole('admin');
+    }
+
+    match /bulk_offers/{offerId} {
+      allow read: if signedIn();
+      allow create: if (hasRole('farmer') && request.resource.data.farmerId == request.auth.uid) || hasRole('admin');
+      allow update, delete: if (resource.data.farmerId == request.auth.uid) || hasRole('admin');
+    }
+
+    match /subscriptions/{subId} {
+      allow read: if isOwner(resource.data.userId) || hasRole('admin');
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isOwner(resource.data.userId) || hasRole('admin');
+    }
+
+    match /negotiations/{negId} {
+      allow read: if resource.data.customerId == request.auth.uid || resource.data.farmerId == request.auth.uid || hasRole('admin');
+      allow create: if signedIn() && request.resource.data.customerId == request.auth.uid;
+      allow update: if resource.data.customerId == request.auth.uid || resource.data.farmerId == request.auth.uid || hasRole('admin');
+      allow delete: if hasRole('admin');
+    }
+
+    match /farmer_verifications/{farmerId} {
+      allow read: if isOwner(farmerId) || hasRole('admin');
+      allow create, update: if isOwner(farmerId) || hasRole('admin');
+      allow delete: if hasRole('admin');
+    }
+
+    match /farmer_transactions/{txId} {
+      allow read: if (resource.data.farmerId == request.auth.uid) || hasRole('admin');
+      allow create: if (request.resource.data.farmerId == request.auth.uid) || hasRole('admin');
+      allow update, delete: if hasRole('admin');
+    }
+
+    match /price_alerts/{alertId} {
+      allow read, write: if isOwner(resource.data.userId) || hasRole('admin');
+    }
+
+    match /notifications/{notifId} {
+      allow read, update, delete: if isOwner(resource.data.userId) || hasRole('admin');
+      allow create: if signedIn();
     }
   }
 }

@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 const WishlistContext = createContext();
 
 const getWishlistKey = (user) => (
-  user?.role === 'customer' ? `farmlink_wishlist_${user.uid}` : null
+  user?.uid ? `farmlink_wishlist_${user.uid}` : 'farmlink_wishlist_guest'
 );
 
 const readWishlist = (key) => {
@@ -38,7 +38,6 @@ export function WishlistProvider({ children }) {
   }, [savedProducts, wishlistKey]);
 
   const toggleSavedProduct = (product) => {
-    if (!wishlistKey) throw new Error('Only customer accounts can save products.');
     setSavedProducts((previous) => (
       previous.some((saved) => saved.id === product.id)
         ? previous.filter((saved) => saved.id !== product.id)
@@ -47,7 +46,6 @@ export function WishlistProvider({ children }) {
   };
 
   const removeSavedProduct = (productId) => {
-    if (!wishlistKey) throw new Error('Only customer accounts can save products.');
     setSavedProducts((previous) => previous.filter((product) => product.id !== productId));
   };
 

@@ -9,8 +9,8 @@ const INITIAL_PRODUCTS = [
     name: 'Organic Sweet Strawberries',
     description: 'Freshly picked, sweet organic strawberries grown without any synthetic pesticides. Perfect for snacking, desserts, or smoothies.',
     category: 'Fruits',
-    price: 4.99,
-    unit: 'lb',
+    price: 120,
+    unit: '500g box',
     quantity: 45,
     imageUrl: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?auto=format&fit=crop&q=80&w=600',
     createdAt: new Date().toISOString()
@@ -22,7 +22,7 @@ const INITIAL_PRODUCTS = [
     name: 'Fresh Crisp Spinach',
     description: 'Crisp, nutrient-rich spinach leaves harvested daily. Great for salads, cooking, or morning green juices.',
     category: 'Leafy Greens',
-    price: 2.49,
+    price: 25,
     unit: 'bunch',
     quantity: 30,
     imageUrl: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=600',
@@ -35,7 +35,7 @@ const INITIAL_PRODUCTS = [
     name: 'Farm Fresh Organic Eggs',
     description: 'Free-range, organic brown eggs from pasture-raised chickens. Large size and rich, golden yolks.',
     category: 'Dairy',
-    price: 5.99,
+    price: 80,
     unit: 'dozen',
     quantity: 20,
     imageUrl: 'https://images.unsplash.com/photo-1516448626880-186164b3f147?auto=format&fit=crop&q=80&w=600',
@@ -48,8 +48,8 @@ const INITIAL_PRODUCTS = [
     name: 'Whole Grain Heirloom Wheat',
     description: 'Stoneground whole grain wheat flour made from organic heritage grains. Enhances texture and nutrition of bread.',
     category: 'Grains',
-    price: 6.50,
-    unit: 'bag (5lb)',
+    price: 260,
+    unit: 'bag (5kg)',
     quantity: 15,
     imageUrl: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?auto=format&fit=crop&q=80&w=600',
     createdAt: new Date().toISOString()
@@ -61,8 +61,8 @@ const INITIAL_PRODUCTS = [
     name: 'Red Kidney Beans (Pulses)',
     description: 'Premium dried organic red kidney beans. High protein content, ideal for chilis, stews, and side dishes.',
     category: 'Pulses',
-    price: 3.20,
-    unit: 'lb',
+    price: 110,
+    unit: 'kg',
     quantity: 60,
     imageUrl: 'https://images.unsplash.com/photo-1585998084226-7604ed77e43e?auto=format&fit=crop&q=80&w=600',
     createdAt: new Date().toISOString()
@@ -74,8 +74,8 @@ const INITIAL_PRODUCTS = [
     name: 'Vine-Ripened Heirloom Tomatoes',
     description: 'Sweet, juicy heirloom tomatoes displaying rich, deep colors. Outstanding flavor for salads or sauces.',
     category: 'Vegetables',
-    price: 3.99,
-    unit: 'lb',
+    price: 35,
+    unit: 'kg',
     quantity: 25,
     imageUrl: 'https://images.unsplash.com/photo-1595855759920-86582396756a?auto=format&fit=crop&q=80&w=600',
     createdAt: new Date().toISOString()
@@ -97,11 +97,12 @@ const INITIAL_ORDERS = [
         quantity: 1
       }
     ],
-    totalAmount: 15.97,
-    deliveryAddress: '456 Sunny Boulevard, Apartment 3B, Metropolis, NY 10001',
-    phone: '+1 (555) 987-6543',
-    status: 'Pending',
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString() // 1 day ago
+    totalAmount: 320,
+    deliveryAddress: 'Flat 402, Green Meadows Residency, Indiranagar, Bangalore',
+    phone: '+91 98765 43210',
+    status: 'In Transit',
+    estimatedDeliveryDate: new Date(Date.now() + 86400000 * 1).toISOString(), // Tomorrow
+    createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
   }
 ];
 
@@ -111,7 +112,17 @@ export const getProducts = () => {
     localStorage.setItem('farmlink_products', JSON.stringify(INITIAL_PRODUCTS));
     return INITIAL_PRODUCTS;
   }
-  return JSON.parse(saved).map((product) => ({ ...product, imageUrl: getProductImage(product) }));
+  try {
+    const parsed = JSON.parse(saved);
+    if (parsed.length > 0 && parsed[0].price < 10) {
+      localStorage.setItem('farmlink_products', JSON.stringify(INITIAL_PRODUCTS));
+      return INITIAL_PRODUCTS;
+    }
+    return parsed.map((product) => ({ ...product, imageUrl: getProductImage(product) }));
+  } catch (e) {
+    localStorage.setItem('farmlink_products', JSON.stringify(INITIAL_PRODUCTS));
+    return INITIAL_PRODUCTS;
+  }
 };
 
 export const getProductById = (id) => {

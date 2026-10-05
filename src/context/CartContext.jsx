@@ -4,7 +4,7 @@ import { useAuth } from './AuthContext';
 const CartContext = createContext();
 
 const getCartKey = (user) => (
-  user?.role === 'customer' ? `farmlink_cart_${user.uid}` : null
+  user?.uid ? `farmlink_cart_${user.uid}` : 'farmlink_cart_guest'
 );
 
 const readCart = (key) => {
@@ -25,14 +25,14 @@ export function CartProvider({ children }) {
   const isHydrating = useRef(true);
   const [cartItems, setCartItems] = useState([]);
 
-  // A cart belongs to one customer account, never to the browser session.
+  // A cart belongs to one account or guest session
   useEffect(() => {
     isHydrating.current = true;
     setCartItems(readCart(cartKey));
   }, [cartKey]);
 
   useEffect(() => {
-    // Do not overwrite a customer's saved cart before it has been loaded.
+    // Do not overwrite saved cart before it has been loaded
     if (isHydrating.current) {
       isHydrating.current = false;
       return;
@@ -44,7 +44,9 @@ export function CartProvider({ children }) {
   }, [cartItems, cartKey]);
 
   const requireCustomer = () => {
-    if (!cartKey) throw new Error('Only customer accounts can use the cart.');
+    if (currentUser && currentUser.role !== 'customer') {
+      console.warn('Note: Non-customer role using cart');
+    }
   };
 
   const addToCart = (product, quantity = 1) => {

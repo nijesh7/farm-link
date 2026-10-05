@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, LogIn, ShoppingBag, Users } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, ShoppingBag, Users, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
@@ -19,10 +19,17 @@ export default function Login() {
 
   useEffect(() => {
     const requestedRole = searchParams.get('role');
-    if (requestedRole === 'customer' || requestedRole === 'farmer') {
+    if (requestedRole === 'customer' || requestedRole === 'farmer' || requestedRole === 'admin') {
       setRole(requestedRole);
     }
   }, [searchParams]);
+
+  const fillQuickAccount = (accEmail, accRole) => {
+    setEmail(accEmail);
+    setPassword('farm123');
+    setRole(accRole);
+    showToast(`Loaded ${accRole} credentials. Click "Sign In"!`, 'info');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,13 +41,15 @@ export default function Login() {
     setSubmitting(true);
     try {
       const user = await login(email, password);
-      if (!user || user.role !== role) {
+      if (!user || (user.role && user.role !== role)) {
         await logout();
-        throw new Error(`This is a ${user?.role || 'different'} account. Please use ${user?.role || 'the correct'} login.`);
+        throw new Error(`This account is registered as a ${user?.role || 'different'} role. Please switch to the ${user?.role || 'correct'} login tab.`);
       }
       showToast(`Welcome back, ${user.name}!`, 'success');
       
-      if (role === 'farmer') {
+      if (role === 'admin') {
+        navigate('/admin');
+      } else if (role === 'farmer') {
         navigate('/farmer');
       } else {
         navigate('/customer');
@@ -54,49 +63,96 @@ export default function Login() {
 
   return (
     <div style={{ display: 'flex', flex: 1, minHeight: 'calc(100vh - 80px)', backgroundColor: 'var(--gray-50)', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
-      <div className="card" style={{ width: '100%', maxWidth: '480px', padding: '2.5rem', boxShadow: 'var(--shadow-lg)' }}>
+      <div className="card" style={{ width: '100%', maxWidth: '520px', padding: '2.5rem', boxShadow: 'var(--shadow-lg)' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h1 style={{ fontSize: '2.25rem', marginBottom: '0.5rem', color: 'var(--primary)' }}>Welcome Back</h1>
           <p style={{ color: 'var(--text-muted)' }}>Login to access your marketplace account</p>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+        {/* 3 Role Selection Tabs */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', marginBottom: '1.5rem' }}>
           <button
             type="button"
             className="btn"
             onClick={() => setRole('customer')}
             style={{
-              padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
-              border: '2px solid', borderRadius: '14px', boxShadow: 'none', color: 'var(--text-main)',
+              padding: '0.85rem 0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem',
+              border: '2px solid', borderRadius: '12px', boxShadow: 'none', color: 'var(--text-main)',
               borderColor: role === 'customer' ? 'var(--primary)' : 'var(--gray-200)',
               backgroundColor: role === 'customer' ? 'var(--primary-bg)' : 'var(--white)',
             }}
           >
-            <ShoppingBag size={22} color={role === 'customer' ? 'var(--primary)' : 'var(--text-muted)'} />
-            <span style={{ fontWeight: 600 }}>Customer Login</span>
+            <ShoppingBag size={20} color={role === 'customer' ? 'var(--primary)' : 'var(--text-muted)'} />
+            <span style={{ fontWeight: 600, fontSize: '0.82rem' }}>Customer</span>
           </button>
+
           <button
             type="button"
             className="btn"
             onClick={() => setRole('farmer')}
             style={{
-              padding: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem',
-              border: '2px solid', borderRadius: '14px', boxShadow: 'none', color: 'var(--text-main)',
+              padding: '0.85rem 0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem',
+              border: '2px solid', borderRadius: '12px', boxShadow: 'none', color: 'var(--text-main)',
               borderColor: role === 'farmer' ? 'var(--secondary)' : 'var(--gray-200)',
               backgroundColor: role === 'farmer' ? 'rgba(212, 163, 115, 0.08)' : 'var(--white)',
             }}
           >
-            <Users size={22} color={role === 'farmer' ? 'var(--secondary)' : 'var(--text-muted)'} />
-            <span style={{ fontWeight: 600 }}>Farmer Login</span>
+            <Users size={20} color={role === 'farmer' ? 'var(--secondary)' : 'var(--text-muted)'} />
+            <span style={{ fontWeight: 600, fontSize: '0.82rem' }}>Farmer</span>
+          </button>
+
+          <button
+            type="button"
+            className="btn"
+            onClick={() => setRole('admin')}
+            style={{
+              padding: '0.85rem 0.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem',
+              border: '2px solid', borderRadius: '12px', boxShadow: 'none', color: 'var(--text-main)',
+              borderColor: role === 'admin' ? 'var(--info)' : 'var(--gray-200)',
+              backgroundColor: role === 'admin' ? 'rgba(52, 152, 219, 0.1)' : 'var(--white)',
+            }}
+          >
+            <ShieldCheck size={20} color={role === 'admin' ? 'var(--info)' : 'var(--text-muted)'} />
+            <span style={{ fontWeight: 600, fontSize: '0.82rem' }}>Admin</span>
           </button>
         </div>
 
-        {/* Demo helpers */}
-        <div style={{ backgroundColor: 'var(--primary-bg)', padding: '1rem', borderRadius: '12px', marginBottom: '2rem', fontSize: '0.85rem', border: '1px solid rgba(30, 86, 49, 0.15)' }}>
-          <strong style={{ color: 'var(--primary)' }}>Quick Test Accounts:</strong>
-          <div style={{ marginTop: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            <div>👨‍🌾 <strong>Farmer:</strong> <code>farmer@farmlink.com</code> / <code>any</code></div>
-            <div>🛒 <strong>Customer:</strong> <code>customer@farmlink.com</code> / <code>any</code></div>
+        {/* 1-Click Quick Demo Accounts */}
+        <div style={{ backgroundColor: 'var(--primary-bg)', padding: '0.9rem', borderRadius: '12px', marginBottom: '1.75rem', fontSize: '0.8rem', border: '1px solid rgba(30, 86, 49, 0.15)' }}>
+          <span style={{ fontWeight: 700, color: 'var(--primary)', display: 'block', marginBottom: '0.4rem' }}>
+            ⚡ 1-Click Demo Accounts:
+          </span>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => fillQuickAccount('admin@farmlink.com', 'admin')}
+              style={{
+                background: 'var(--card-bg)', border: '1px solid var(--info)', color: 'var(--info)',
+                padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer'
+              }}
+            >
+              🛡️ Fill Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => fillQuickAccount('farmer@farmlink.com', 'farmer')}
+              style={{
+                background: 'var(--card-bg)', border: '1px solid var(--secondary)', color: 'var(--secondary)',
+                padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer'
+              }}
+            >
+              👨‍🌾 Fill Farmer
+            </button>
+            <button
+              type="button"
+              onClick={() => fillQuickAccount('customer@farmlink.com', 'customer')}
+              style={{
+                background: 'var(--card-bg)', border: '1px solid var(--primary)', color: 'var(--primary)',
+                padding: '4px 8px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer'
+              }}
+            >
+              🛒 Fill Customer
+            </button>
           </div>
         </div>
 
@@ -139,7 +195,7 @@ export default function Login() {
               />
               <button 
                 type="button" 
-                style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', color: 'var(--text-muted)' }}
+                style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -147,26 +203,30 @@ export default function Login() {
             </div>
           </div>
 
-          <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.5rem' }}>
-            <input 
-              type="checkbox" 
-              id="remember" 
-              style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: 'var(--primary)' }}
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-            />
-            <label htmlFor="remember" style={{ fontSize: '0.9rem', cursor: 'pointer', color: 'var(--text-muted)' }}>
-              Remember me on this device
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', cursor: 'pointer' }}>
+              <input 
+                type="checkbox" 
+                checked={rememberMe} 
+                onChange={(e) => setRememberMe(e.target.checked)}
+                style={{ accentColor: 'var(--primary)' }}
+              />
+              <span>Remember me</span>
             </label>
           </div>
 
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem', backgroundColor: role === 'farmer' ? 'var(--secondary)' : 'var(--primary)', borderColor: role === 'farmer' ? 'var(--secondary)' : 'var(--primary)' }} disabled={submitting}>
+          <button 
+            type="submit" 
+            className="btn btn-primary" 
+            style={{ width: '100%', padding: '0.9rem', fontSize: '1rem' }}
+            disabled={submitting}
+          >
             <LogIn size={18} />
-            <span>{submitting ? 'Logging In...' : `Login as ${role === 'farmer' ? 'Farmer' : 'Customer'}`}</span>
+            <span>{submitting ? 'Authenticating...' : `Sign In as ${role.charAt(0).toUpperCase() + role.slice(1)}`}</span>
           </button>
         </form>
 
-        <div style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+        <div style={{ textAlign: 'center', marginTop: '2rem', borderTop: '1px solid var(--gray-200)', paddingTop: '1.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
           Don't have an account?{' '}
           <Link to={`/register?role=${role}`} style={{ color: 'var(--primary)', fontWeight: 600 }}>
             Register Now
