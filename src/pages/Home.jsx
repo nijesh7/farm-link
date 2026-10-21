@@ -328,6 +328,66 @@ export default function Home() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem' }}>
+            {/* AI Crop Doctor Card */}
+            <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', borderRadius: '16px', border: '2px solid rgba(46, 204, 113, 0.4)' }}>
+              <div style={{ backgroundColor: 'var(--card-bg)', width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem', boxShadow: 'var(--shadow-sm)', fontSize: '1.5rem' }}>
+                🩺
+              </div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>AI Crop Doctor</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                Instant photo pathology scan. Detect pests, blights, and leaf chlorosis with certified organic & bio-fungicide remedies.
+              </p>
+              <Link to="/crop-doctor" className="btn btn-primary btn-sm" style={{ marginTop: 'auto', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span>Scan Crop Sample</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            {/* Kisan Carpool Card */}
+            <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
+              <div style={{ backgroundColor: 'var(--card-bg)', width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem', boxShadow: 'var(--shadow-sm)', fontSize: '1.5rem' }}>
+                🚛
+              </div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Kisan Carpool (Logistics)</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                Pool truck space with nearby farmers heading to city APMC mandis. Cut shipping freight by 50–65% with cold-chain tracking.
+              </p>
+              <Link to="/kisan-carpool" className="btn btn-outline btn-sm" style={{ marginTop: 'auto', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span>View Pooled Trucks</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            {/* Equipment Rental Card */}
+            <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
+              <div style={{ backgroundColor: 'var(--card-bg)', width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem', boxShadow: 'var(--shadow-sm)', fontSize: '1.5rem' }}>
+                🚜
+              </div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Machinery & Drone Rental</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                Uber for tractors, rotavators, and precision spray drones. Rent by the acre or hour with verified local operators.
+              </p>
+              <Link to="/equipment-rental" className="btn btn-outline btn-sm" style={{ marginTop: 'auto', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span>Rent Machinery</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+
+            {/* Group Buying Card */}
+            <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
+              <div style={{ backgroundColor: 'var(--card-bg)', width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem', boxShadow: 'var(--shadow-sm)', fontSize: '1.5rem' }}>
+                👥
+              </div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Apartment Group Buying</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                Pool collective orders with apartment society neighbors to unlock 30–45% bulk discounts and free direct farm delivery.
+              </p>
+              <Link to="/group-buying" className="btn btn-outline btn-sm" style={{ marginTop: 'auto', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span>Explore Society Pools</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+
             {/* Market Trends Card */}
             <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', borderRadius: '16px' }}>
               <div style={{ backgroundColor: 'var(--card-bg)', width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem', boxShadow: 'var(--shadow-sm)', fontSize: '1.5rem' }}>

@@ -19,7 +19,10 @@ import {
   HelpCircle,
   BookOpen,
   Info,
-  Calculator
+  Calculator,
+  Activity,
+  Tractor,
+  Users
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -68,7 +71,7 @@ export default function Navbar() {
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-  const isMoreActive = ['/pre-orders', '/market-trends', '/traceability', '/profit-simulator', '/about', '/faq', '/farmer-guide'].some(
+  const isMoreActive = ['/crop-doctor', '/kisan-carpool', '/equipment-rental', '/group-buying', '/pre-orders', '/market-trends', '/traceability', '/profit-simulator', '/about', '/faq', '/farmer-guide'].some(
     (path) => location.pathname.startsWith(path)
   );
 
@@ -105,6 +108,35 @@ export default function Navbar() {
 
             {moreDropdownOpen && (
               <div className="nav-dropdown-menu">
+                <Link to="/crop-doctor" className="nav-dropdown-item" onClick={() => setMoreDropdownOpen(false)}>
+                  <Activity size={16} color="var(--primary)" />
+                  <div>
+                    <div className="dropdown-title">AI Crop Doctor</div>
+                    <div className="dropdown-desc">Instant pest & disease pathology scanner</div>
+                  </div>
+                </Link>
+                <Link to="/kisan-carpool" className="nav-dropdown-item" onClick={() => setMoreDropdownOpen(false)}>
+                  <Truck size={16} color="var(--primary)" />
+                  <div>
+                    <div className="dropdown-title">Kisan Carpool</div>
+                    <div className="dropdown-desc">Pooled truck freight — save up to 60%</div>
+                  </div>
+                </Link>
+                <Link to="/equipment-rental" className="nav-dropdown-item" onClick={() => setMoreDropdownOpen(false)}>
+                  <Tractor size={16} color="var(--primary)" />
+                  <div>
+                    <div className="dropdown-title">Equipment & Drones</div>
+                    <div className="dropdown-desc">Rent tractors & spray drones by acre/hr</div>
+                  </div>
+                </Link>
+                <Link to="/group-buying" className="nav-dropdown-item" onClick={() => setMoreDropdownOpen(false)}>
+                  <Users size={16} color="var(--primary)" />
+                  <div>
+                    <div className="dropdown-title">Apartment Group Buying</div>
+                    <div className="dropdown-desc">Pool with neighbors for wholesale rates</div>
+                  </div>
+                </Link>
+                <div className="dropdown-divider"></div>
                 <Link to="/pre-orders" className="nav-dropdown-item" onClick={() => setMoreDropdownOpen(false)}>
                   <CalendarCheck size={16} color="var(--primary)" />
                   <div>
@@ -270,6 +302,10 @@ export default function Navbar() {
           <NavLink to="/surplus-produce" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>Surplus Produce (Discounts)</NavLink>
           <NavLink to="/farmers-near-you" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>Farmers Near You</NavLink>
           <NavLink to="/subscriptions" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>Farm Basket Subscriptions</NavLink>
+          <NavLink to="/crop-doctor" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>🩺 AI Crop Doctor</NavLink>
+          <NavLink to="/kisan-carpool" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>🚛 Kisan Carpool (Logistics)</NavLink>
+          <NavLink to="/equipment-rental" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>🚜 Equipment & Drone Rental</NavLink>
+          <NavLink to="/group-buying" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>👥 Apartment Group Buying</NavLink>
           <NavLink to="/pre-orders" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>Harvest Pre-Orders (CSA)</NavLink>
           <NavLink to="/market-trends" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>Market Trends & Mandi Index</NavLink>
           <NavLink to="/traceability" className="mobile-nav-link" onClick={() => setMobileMenuOpen(false)}>Traceability Hub</NavLink>

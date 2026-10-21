@@ -45,6 +45,12 @@ import FarmerPublicProfile from './pages/FarmerPublicProfile';
 import Subscriptions from './pages/Subscriptions';
 import FarmProfitSimulator from './pages/FarmProfitSimulator';
 
+// FarmLink 3.0 Next-Gen Features
+import CropDoctor from './pages/CropDoctor';
+import KisanCarpool from './pages/KisanCarpool';
+import EquipmentRental from './pages/EquipmentRental';
+import GroupBuying from './pages/GroupBuying';
+
 // Protected Dashboards
 import CustomerDashboard from './pages/customer/CustomerDashboard';
 import FarmerDashboard from './pages/farmer/FarmerDashboard';
@@ -72,6 +78,11 @@ function App() {
                     <Route path="/products" element={<Products />} />
                     
                     {/* Advanced Feature Routes */}
+                    <Route path="/crop-doctor" element={<CropDoctor />} />
+                    <Route path="/kisan-carpool" element={<KisanCarpool />} />
+                    <Route path="/equipment-rental" element={<EquipmentRental />} />
+                    <Route path="/group-buying" element={<GroupBuying />} />
+
                     <Route path="/bulk-marketplace" element={<BulkMarketplace />} />
                     <Route path="/surplus-produce" element={<SurplusProduce />} />
                     <Route path="/farmers-near-you" element={<FarmersNearYou />} />
